@@ -1,3 +1,11 @@
+networks:
+  ext-network:
+    name: nginxproxymanager_default
+    external: true
+  onlyoffice-network:
+    name: onlyoffice-network
+    driver: bridge
+
 services:
   onlyoffice-documentserver:
     build:
@@ -15,13 +23,13 @@ services:
       - DB_USER=onlyoffice
       - AMQP_URI=amqp://guest:guest@onlyoffice-rabbitmq
       # Uncomment strings below to enable the JSON Web Token validation.
-      #- JWT_ENABLED=true
-      #- JWT_SECRET=secret
-      #- JWT_HEADER=Authorization
-      #- JWT_IN_BODY=true
+      - JWT_ENABLED=true
+      - JWT_SECRET=${TOKEN}
+      - JWT_HEADER=Authorization
+      - JWT_IN_BODY=true
     ports:
-      - '80:80'
-      - '443:443'
+      - 80
+      - 443
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/info/info.json"]
       interval: 30s
@@ -37,6 +45,9 @@ services:
        - /var/lib/onlyoffice/documentserver/App_Data/cache/files
        - /var/www/onlyoffice/documentserver-example/public/files
        - /usr/share/fonts
+    networks:
+      - ext-network
+      - onlyoffice-network
        
   onlyoffice-rabbitmq:
     container_name: onlyoffice-rabbitmq
@@ -50,6 +61,8 @@ services:
       retries: 3
       start_period: 10s
       timeout: 10s
+    networks:
+      - onlyoffice-network
 
   onlyoffice-postgresql:
     container_name: onlyoffice-postgresql
@@ -69,6 +82,8 @@ services:
       retries: 3
       start_period: 10s
       timeout: 10s
+    networks:
+      - onlyoffice-network
 
 volumes:
   postgresql_data:

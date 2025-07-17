@@ -1,0 +1,7 @@
+
+*.log*
+*.tar
+
+# file contains sensible data
+.env 
+
